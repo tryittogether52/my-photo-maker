@@ -1,8 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Photo maker</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
+    <string name="app_name">PhotoMaker</string>
+    <string name="version_name">1.2.2</string>
+
+    <!-- Dialog titles -->
+    <string name="dialog_title_error">Error</string>
+    <string name="dialog_login_action">Login</string>
+
+    <!-- YES/NO dialog -->
+    <string name="button_ok">OK</string>
+    <string name="hello">Hello World, PhotoIntentActivity!</string>
+    <string name="btnIntend">Take (big) Picture</string>
+    <string name="btnIntendS">Take (small) Picture</string>
+    <string name="btnIntendV">Take Video</string>
+    <string name="cannot">Cannot</string>
 
 </resources>
