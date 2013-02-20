@@ -1,103 +1,85 @@
 package com.wsc.photomaker.controller;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
+import android.util.Log;
+
+import com.wsc.photomaker.R;
 import com.wsc.photomaker.app.KApplication;
+import com.wsc.photomaker.utils.DialogUtils;
 
-public class FileManagerService extends AbstractManager{
+public class FileManagerService extends AbstractManager {
 
-	public static FileManagerService instance; 
+	private static FileManagerService instance;
+
+	private static final String JPEG_FILE_PREFIX = "IMG_";
+	private static final String JPEG_FILE_SUFFIX = ".jpg";
 
 	public static FileManagerService getInstance() {
-		if (instance == null){
+		if (instance == null) {
 			instance = new FileManagerService();
 		}
 		return instance;
 	}
 
-	public String getExternalPath(){
-		String filesDir = KApplication.getContext().getFilesDir().getAbsolutePath();
-	//	String externalFilesDir = KApplication.getContext().getExternalFilesDir(null).getAbsolutePath();
-		return filesDir;
-	}
-//
-//	private String getAbsolutePathToApplication(){
-////		String pathDefault = ResourceManager.getStringValue(R.string.path_root).replace("%env", HPModel.getInstance().getEnv());
-//		String pathDefault = ResourceManager.getStringValue(R.string.path_root);//.replace("%env", "env");
-//
-//		return getExternalPath() + pathDefault;
-//	}
-//
-//	public String getAbsolutePathToEvn(){
-////		String pathDefault = getAbsolutePathToApplication() + ResourceManager.getStringValue(R.string.path_env).replace("%env", HPModel.getInstance().getEnv());
-//		String pathDefault = getAbsolutePathToApplication() + ResourceManager.getStringValue(R.string.path_env);//.replace("%env", "env");
-//		return pathDefault;
-//	}
-
-//	public String getAbsolutePathToEvnLocalized(){
-//		String pathDefault = getAbsolutePathToEvn(); //+ "/" + HPModel.getInstance().getLocale().getLanguage(); 
-//		return pathDefault; 
-//	}
-
-//	public String getAbsolutePathToDB(){
-//		String path = ResourceManager.getStringValue(R.string.path_db);
-//		return getAbsolutePathToEvnLocalized() + path; 
-//	}
-//
-//	public String getAbsolutePathToImages(){
-//		String path = ResourceManager.getStringValue(R.string.path_images);
-//		return getAbsolutePathToEvn() + path; 
-//	} 
-//
-//	public String getAbsolutePathToEtc(){
-//		String path = ResourceManager.getStringValue(R.string.path_etc);
-//		return getAbsolutePathToEvn() + path; 
-//	}
-//	public String getAbsolutePathToConfigs(){
-//		String path = ResourceManager.getStringValue(R.string.path_conf);
-//		return getAbsolutePathToEvn() + path; 
-//	}
- 
-
-
-	public void updateApplicationDirStructure() throws IOException{   
-
-//		FileUtils.rmDirStructure(getAbsolutePathToApplication());
-		
-//		FileUtils.mkDirStructure(getAbsolutePathToConfigs());
-//		FileUtils.mkDirStructure(getAbsolutePathToDB()); 
-//		FileUtils.mkDirStructure(getAbsolutePathToEtc());
-//		FileUtils.mkDirStructure(getAbsolutePathToImages());
-	} 
-
-	public String getDatabaseLocPath(){
-		String result = "";
-		result = getExternalPath();
-		
-		return result;
-	}  
-
 	@Override
 	public void onCreationComplete() {
-		try {
-			updateApplicationDirStructure();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
 	}
 
 	@Override
 	public void onRefresh() {
-		try {
-			updateApplicationDirStructure();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
 	}
 
 	@Override
 	public void onDestroy() {
 
+	}
 
+	public File getAlbumStorageDir(String albumName) {
+		return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), albumName);
+	}
+
+	private File getAlbumDir() {
+		File storageDir = null;
+		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+			storageDir = getAlbumStorageDir("PhotoMaker");
+			if (storageDir != null) {
+				if (!storageDir.mkdirs()) {
+					if (!storageDir.exists()) {
+						Log.d("CameraSample", "failed to create directory");
+						return null;
+					}
+				}
+			}
+		} else {
+			DialogUtils.showExceptionAsDialog(KApplication.getContext(), R.string.exception_cd);
+		}
+
+		return storageDir;
+	}
+
+	public File createImageFile() throws IOException {
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		String imageFileName = JPEG_FILE_PREFIX + timeStamp + "_";
+		File albumF = getAlbumDir();
+		File imageF = File.createTempFile(imageFileName, JPEG_FILE_SUFFIX, albumF);
+		return imageF;
+	}
+
+	public void updateGallery(Context context, String photoPath) {
+		Intent mediaScanIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
+		File f = new File(photoPath);
+		Uri contentUri = Uri.fromFile(f);
+		mediaScanIntent.setData(contentUri);
+		context.sendBroadcast(mediaScanIntent);
 	}
 }
