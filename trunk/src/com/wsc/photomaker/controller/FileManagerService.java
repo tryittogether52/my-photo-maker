@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import com.wsc.photomaker.R;
 import com.wsc.photomaker.app.KApplication;
 import com.wsc.photomaker.utils.DialogUtils;
 
+@SuppressLint("SimpleDateFormat")
 public class FileManagerService extends AbstractManager {
 
 	private static FileManagerService instance;
@@ -68,11 +70,16 @@ public class FileManagerService extends AbstractManager {
 	}
 
 	public File createImageFile() throws IOException {
-		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-		String imageFileName = JPEG_FILE_PREFIX + timeStamp + "_";
-		File albumF = getAlbumDir();
-		File imageF = File.createTempFile(imageFileName, JPEG_FILE_SUFFIX, albumF);
-		return imageF;
+		String date = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+		String previewName = JPEG_FILE_PREFIX + date;
+		File gallery = getAlbumDir();
+		// File result = File.createTempFile(previewName, JPEG_FILE_SUFFIX,
+		// gallery);
+		File result;
+		do {
+			result = new File(gallery, previewName + JPEG_FILE_SUFFIX);
+		} while (!result.createNewFile());
+		return result;
 	}
 
 	public void updateGallery(Context context, String photoPath) {
