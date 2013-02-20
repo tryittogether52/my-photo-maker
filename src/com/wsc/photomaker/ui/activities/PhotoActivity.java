@@ -86,8 +86,8 @@ public class PhotoActivity extends BaseActivity {
 
 		/* There isn't enough memory to open up more than a couple camera photos */
 		/* So pre-scale the target bitmap into which the file is decoded */
-		int targetW = 300;
-		int targetH = 300;
+		int targetW = preview.getWidth();
+		int targetH = preview.getHeight();
 
 		/* Get the size of the image */
 		BitmapFactory.Options bmOptions = new BitmapFactory.Options();
