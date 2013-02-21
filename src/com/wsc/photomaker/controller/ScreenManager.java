@@ -41,6 +41,10 @@ public class ScreenManager extends AbstractManager {
 		Intent intent = new Intent(current, nextActivityClass);
 		current.startActivityForResult(intent, requestCode);
 	}
+	
+	public void forwardForResult(Activity current, Intent intent, int requestCode) {
+		current.startActivityForResult(intent, requestCode);
+	}
 
 	// public void cleanPreviousActivity() {
 	//

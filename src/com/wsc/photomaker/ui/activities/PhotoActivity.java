@@ -13,20 +13,26 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.wsc.photomaker.R;
 import com.wsc.photomaker.controller.FileManagerService;
 import com.wsc.photomaker.controller.ResourceManager;
+import com.wsc.photomaker.controller.ScreenManager;
+import com.wsc.photomaker.exceptions.InternetMissingException;
 import com.wsc.photomaker.ui.activities.base.BaseActivity;
+import com.wsc.photomaker.utils.ConnectionUtils;
 import com.wsc.photomaker.utils.DialogUtils;
 import com.wsc.photomaker.utils.IntentAbilitiesUtils;
 
 public class PhotoActivity extends BaseActivity {
-	private static final int REQUEST_CODE = 1;
+	private static final int REQUEST_CODE_PHOTO = 1;
+	private static final int REQUEST_CODE_EMAIL = 2;
 	private String previewPath;
 
 	private ImageView preview;
 	private Button shootPhoto;
+	private Button sentPhoto;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -38,6 +44,7 @@ public class PhotoActivity extends BaseActivity {
 	public void initComponents() {
 		preview = (ImageView) findViewById(R.id.preview);
 		shootPhoto = (Button) findViewById(R.id.button_shoot);
+		sentPhoto = (Button) findViewById(R.id.button_sent);
 	}
 
 	@Override
@@ -58,9 +65,30 @@ public class PhotoActivity extends BaseActivity {
 						isExistProblems = true;
 					}
 					if (!isExistProblems)
-						startActivityForResult(takePictureIntent, REQUEST_CODE);
+						ScreenManager.getInstance().forwardForResult(PhotoActivity.this, takePictureIntent, REQUEST_CODE_PHOTO);
 				} else {
 					DialogUtils.showExceptionAsDialog(PhotoActivity.this, ResourceManager.getStringValue(R.string.exception_missing_camera));
+				}
+			}
+		});
+
+		sentPhoto.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				try {
+					if (ConnectionUtils.isInternetConnection()) {
+
+						Intent emailIntent = new Intent(Intent.ACTION_SEND);
+						emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] { "wallkerby@tut.by" });
+						emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Email subject");
+						emailIntent.putExtra(Intent.EXTRA_TEXT, "Message body");
+						emailIntent.setType("text/plain");
+
+						ScreenManager.getInstance().forwardForResult(PhotoActivity.this, emailIntent, REQUEST_CODE_EMAIL);
+					}
+				} catch (InternetMissingException e) {
+					DialogUtils.showExceptionAsDialog(PhotoActivity.this, e);
 				}
 			}
 		});
@@ -68,12 +96,16 @@ public class PhotoActivity extends BaseActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+		if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_PHOTO) {
 			if (previewPath != null) {
 				setPreview();
 				FileManagerService.getInstance().updateGallery(PhotoActivity.this, previewPath);
 				previewPath = null;
 			}
+		}
+
+		if (requestCode == REQUEST_CODE_EMAIL) {
+			Toast.makeText(this, "Письмо отправлено", Toast.LENGTH_SHORT).show();
 		}
 	}
 

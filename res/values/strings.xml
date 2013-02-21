@@ -6,6 +6,7 @@
     <!-- Exceptions -->
     <string name="dialog_title_error">Ошибка</string>
     <string name="exception_missing_camera">Не могу найти камеру</string>
+    <string name="exception_missing_internet">Отсуствует подключение к интернету. Не могу отправить заказ.</string>
     <string name="exception_cd">Не могу сохранить фото на CDCard</string>
 
     <!-- YES/NO dialog -->
